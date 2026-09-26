@@ -16,6 +16,8 @@ import { useApp } from '../store'
 
 const CLAVE_USUARIOS = 'usuariosFuncionales'
 const FORMATO_PIN = /^\d{4}$/
+/** Destino del enlace de confirmación de correo de los usuarios nuevos. */
+const URL_CONFIRMACION = 'https://control-de-morosos-web.shaielbecerra.workers.dev/'
 
 interface UsuarioLocal {
   id: string
@@ -185,7 +187,7 @@ export default function Configuracion() {
       password: claveUsuario,
       options: {
         data: { nombre: nombreUsuario.trim() },
-        emailRedirectTo: `${window.location.origin}/app/configuracion`,
+        emailRedirectTo: URL_CONFIRMACION,
       },
     })
 
