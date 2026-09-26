@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Plus, Search, Store, Wallet } from 'lucide-react'
 import { Link, Navigate, Outlet, useNavigate } from 'react-router-dom'
+import BloqueoInactividad from './BloqueoInactividad'
 import MobileNav from './MobileNav'
 import RateWidget from './RateWidget'
 import Sidebar from './Sidebar'
@@ -123,6 +124,7 @@ export default function AppShell() {
 
       <MobileNav />
       <TransactionModals />
+      <BloqueoInactividad />
     </div>
   )
 }

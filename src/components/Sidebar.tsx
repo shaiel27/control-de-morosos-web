@@ -105,10 +105,10 @@ export default function Sidebar() {
             </span>
             <span className="min-w-0">
               <span className="block truncate text-xs font-semibold text-gray-800">
-                Caja Principal 01
+                Bodega Los Malabares
               </span>
               <span className="block truncate text-[11px] text-gray-500">
-                Frontera Cúcuta–Táchira
+                Peñón Michelena–Táchira
               </span>
             </span>
             <span className="ml-auto h-2 w-2 shrink-0 rounded-full bg-apple-green" aria-hidden />

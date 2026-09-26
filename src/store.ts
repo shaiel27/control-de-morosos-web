@@ -10,7 +10,7 @@ import {
   obtenerTransacciones,
   registrarTransaccionBD,
 } from './lib/api'
-import { CORREO_DEMO, supabase } from './lib/supabase'
+import { supabase } from './lib/supabase'
 import type { Cliente, HistorialTasa, Moneda, Tasas, Transaccion } from './lib/types'
 
 export interface ModalTransaccion {
@@ -49,7 +49,6 @@ interface EstadoApp {
   iniciar: () => () => void
   refrescar: () => Promise<void>
   ingresar: (correo: string, clave: string) => Promise<boolean>
-  ingresarConPin: (pin: string) => Promise<boolean>
   salir: () => Promise<void>
   definirTasas: (tasas: Tasas) => Promise<boolean>
   definirMoneda: (moneda: Moneda) => void
@@ -138,22 +137,6 @@ export const useApp = create<EstadoApp>((set, get) => ({
     const { error } = await supabase.auth.signInWithPassword({ email: correo, password: clave })
     if (error) {
       set({ ocupado: false, error: mensajeDeError(error) })
-      return false
-    }
-    set({ autenticado: true, ocupado: false })
-    await get().refrescar()
-    return true
-  },
-
-  ingresarConPin: async (pin) => {
-    set({ ocupado: true, error: null })
-    const { error } = await supabase.auth.signInWithPassword({
-      email: CORREO_DEMO,
-      password: pin,
-    })
-    if (error) {
-      const mensaje = mensajeDeError(error)
-      set({ ocupado: false, error: mensaje.includes('incorrectos') ? 'PIN incorrecto.' : mensaje })
       return false
     }
     set({ autenticado: true, ocupado: false })
