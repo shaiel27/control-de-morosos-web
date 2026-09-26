@@ -1,75 +1,43 @@
-# React + TypeScript + Vite
+# Control de Fiados
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+App web (React + Vite + TypeScript) para llevar el control de fiados y morosos de una tienda. Usa Supabase como backend.
 
-Currently, two official plugins are available:
+Producción: https://control-de-morosos-web.shaielbecerra.workers.dev/
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Desarrollo local
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+cp .env.example .env   # completar con los datos de Supabase
+pnpm install
+pnpm dev
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+## Variables de entorno
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+| Variable | Descripción |
+|---|---|
+| `VITE_SUPABASE_URL` | URL del proyecto de Supabase |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Clave publishable de Supabase |
+| `VITE_CORREO_DEMO` | Correo de la cuenta demo |
+| `VITE_PIN_DEMO` | PIN de la cuenta demo |
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Las variables `VITE_*` se incrustan en el JavaScript al compilar, así que son públicas. La seguridad de los datos depende de las políticas RLS de Supabase.
 
+## Despliegue (Cloudflare Workers)
+
+El Worker `control-de-morosos-web` está conectado a este repositorio y se despliega solo con cada push a `main`. La configuración está en `wrangler.jsonc`: sirve `dist/` como assets estáticos con fallback SPA para React Router.
+
+Configuración en Cloudflare (Worker → Settings → Build):
+
+- Build command: `pnpm run build`
+- Deploy command: `npx wrangler deploy`
+- Las variables `VITE_*` deben estar en **Build → Variables and secrets** (variables de build, no de runtime).
+
+"Retry deployment" vuelve a construir el mismo commit. Para desplegar cambios nuevos hay que hacer push a `main`.
+
+Despliegue manual:
+
+```bash
+pnpm build
+npx wrangler deploy
 ```
