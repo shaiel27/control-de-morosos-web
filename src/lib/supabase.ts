@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 
-const url = import.meta.env.VITE_SUPABASE_URL
-const clave = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
+const url = import.meta.env.VITE_SUPABASE_URL?.trim()
+const clave = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim()
 
 if (!url || !clave) {
   throw new Error('Faltan VITE_SUPABASE_URL o VITE_SUPABASE_PUBLISHABLE_KEY en el archivo .env')
