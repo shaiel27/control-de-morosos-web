@@ -54,3 +54,88 @@ export function resumenCartera(clientes: Cliente[], transacciones: Transaccion[]
 export function ultimasTransacciones(transacciones: Transaccion[], limite: number): Transaccion[] {
   return [...transacciones].sort((a, b) => b.fecha.localeCompare(a.fecha)).slice(0, limite)
 }
+
+export function desdeDias(dias: number | null): Date | null {
+  if (!dias) return null
+  const fecha = new Date()
+  fecha.setHours(0, 0, 0, 0)
+  fecha.setDate(fecha.getDate() - (dias - 1))
+  return fecha
+}
+
+export function desdeHoy(): Date {
+  const fecha = new Date()
+  fecha.setHours(0, 0, 0, 0)
+  return fecha
+}
+
+export function desdeMes(): Date {
+  const fecha = new Date()
+  fecha.setDate(1)
+  fecha.setHours(0, 0, 0, 0)
+  return fecha
+}
+
+export function enRango(transacciones: Transaccion[], desde: Date | null): Transaccion[] {
+  if (!desde) return transacciones
+  const tope = desde.getTime()
+  return transacciones.filter((t) => new Date(t.fecha).getTime() >= tope)
+}
+
+export function ordenarDesc(transacciones: Transaccion[]): Transaccion[] {
+  return [...transacciones].sort((a, b) => b.fecha.localeCompare(a.fecha))
+}
+
+export interface ResumenPeriodo {
+  fiado: number
+  abono: number
+  diferencia: number
+  movimientos: number
+}
+
+export function resumenPeriodo(lista: Transaccion[]): ResumenPeriodo {
+  let fiado = 0
+  let abono = 0
+
+  for (const t of lista) {
+    if (t.tipo === 'fiado') fiado += t.montoCop
+    else abono += t.montoCop
+  }
+
+  return { fiado, abono, diferencia: abono - fiado, movimientos: lista.length }
+}
+
+export interface DiaMovimiento {
+  clave: string
+  fecha: Date
+  fiado: number
+  abono: number
+}
+
+function claveDeFecha(fecha: Date): string {
+  const anio = fecha.getFullYear()
+  const mes = String(fecha.getMonth() + 1).padStart(2, '0')
+  const dia = String(fecha.getDate()).padStart(2, '0')
+  return `${anio}-${mes}-${dia}`
+}
+
+export function serieDiaria(transacciones: Transaccion[], dias: number): DiaMovimiento[] {
+  const inicio = desdeDias(dias) ?? desdeHoy()
+  const celdas = new Map<string, DiaMovimiento>()
+
+  for (let i = 0; i < dias; i++) {
+    const fecha = new Date(inicio)
+    fecha.setDate(inicio.getDate() + i)
+    const clave = claveDeFecha(fecha)
+    celdas.set(clave, { clave, fecha, fiado: 0, abono: 0 })
+  }
+
+  for (const t of transacciones) {
+    const celda = celdas.get(claveDeFecha(new Date(t.fecha)))
+    if (!celda) continue
+    if (t.tipo === 'fiado') celda.fiado += t.montoCop
+    else celda.abono += t.montoCop
+  }
+
+  return [...celdas.values()]
+}

@@ -10,6 +10,8 @@ export interface Cliente {
   cedula: string
   estado: boolean
   desde: string
+  /** Límite de crédito en COP. `null` = sin límite. */
+  limiteCreditoCop: number | null
 }
 
 export interface Transaccion {
@@ -18,10 +20,16 @@ export interface Transaccion {
   tipo: TipoTransaccion
   montoCop: number
   observacion: string
+  /** Número de referencia de la transferencia bancaria (abonos). `null` si no aplica. */
+  referencia: string | null
   fecha: string
 }
 
 export interface Tasas {
   usdCop: number
   usdVes: number
+}
+
+export interface HistorialTasa extends Tasas {
+  fecha: string
 }

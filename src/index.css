@@ -33,7 +33,22 @@
   }
 }
 
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 @layer utilities {
+  .animate-modal {
+    animation: modal-in 0.16s ease-out;
+  }
+
   .scrollbar-slim {
     scrollbar-width: thin;
     scrollbar-color: var(--color-gray-300) transparent;

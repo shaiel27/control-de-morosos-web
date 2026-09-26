@@ -59,7 +59,7 @@ export default function Sidebar() {
           <button
             type="button"
             onClick={() => abrirModal({ tipo: 'fiado', clienteId: null })}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-apple-green px-3 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-apple-green-dark active:scale-[0.98]"
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-coral px-3 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-coral-dark active:scale-[0.98]"
           >
             <Plus size={18} aria-hidden />
             Registrar Fiado
@@ -90,7 +90,7 @@ export default function Sidebar() {
           <button
             type="button"
             onClick={() => {
-              salir()
+              void salir()
               navigate('/')
             }}
             className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-800"
