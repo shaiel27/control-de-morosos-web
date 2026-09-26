@@ -3,7 +3,7 @@ import { Delete, Loader2, Lock, ShieldCheck } from 'lucide-react'
 import { pinActual } from '../lib/pin'
 import { useApp } from '../store'
 
-const MINUTOS_BLOQUEO = 10
+const MINUTOS_BLOQUEO = 5
 const CLAVE_ACTIVIDAD = 'ultimaActividad'
 const TECLAS = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
 
@@ -25,7 +25,7 @@ function ultimaActividad(): number {
   return Date.now()
 }
 
-/** Bloquea la sesión tras 10 minutos de inactividad; solo se reanuda con el PIN. */
+/** Bloquea la sesión tras 5 minutos de inactividad; solo se reanuda con el PIN. */
 export default function BloqueoInactividad() {
   const autenticado = useApp((estado) => estado.autenticado)
   const [bloqueado, setBloqueado] = useState(false)

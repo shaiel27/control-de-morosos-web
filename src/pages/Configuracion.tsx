@@ -299,7 +299,7 @@ export default function Configuracion() {
 
         <Tarjeta
           titulo="PIN de bloqueo"
-          detalle={`Reanuda la sesión a los 10 minutos de inactividad. Vigente: ${
+          detalle={`Reanuda la sesión a los 5 minutos de inactividad. Vigente: ${
             pinActual() || 'no definido'
           }`}
           icono={ShieldCheck}

@@ -89,7 +89,7 @@ const PREGUNTAS: Pregunta[] = [
     categoria: 'Cuenta y seguridad',
     pregunta: '¿Para qué sirve el PIN y cada cuánto pide?',
     respuesta:
-      'El PIN solo reanuda la sesión después de 10 minutos de inactividad, sin cerrar la sesión. En un equipo nuevo siempre se pide primero correo y contraseña. El PIN se guarda por dispositivo y se cambia en Configuración.',
+      'El PIN solo reanuda la sesión después de 5 minutos de inactividad, sin cerrar la sesión. En un equipo nuevo siempre se pide primero correo y contraseña. El PIN se guarda por dispositivo y se cambia en Configuración.',
   },
   {
     categoria: 'Cuenta y seguridad',

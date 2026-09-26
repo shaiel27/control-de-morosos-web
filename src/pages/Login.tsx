@@ -108,7 +108,7 @@ export default function Login() {
         </form>
 
         <p className="mt-6 text-center text-[11px] leading-relaxed text-gray-400">
-          En este dispositivo puedes reanudar la sesión con tu PIN tras 10 minutos de inactividad.
+          En este dispositivo puedes reanudar la sesión con tu PIN tras 5 minutos de inactividad.
         </p>
       </div>
     </main>
