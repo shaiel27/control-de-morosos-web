@@ -1,13 +1,14 @@
 import { useEffect } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import AppShell from './components/AppShell'
+import Ayuda from './pages/Ayuda'
 import ClientList from './pages/ClientList'
 import ClientProfile from './pages/ClientProfile'
+import Configuracion from './pages/Configuracion'
 import Dashboard from './pages/Dashboard'
 import LibroFiados from './pages/LibroFiados'
 import Login from './pages/Login'
 import ReportesCierre from './pages/ReportesCierre'
-import Soon from './pages/Soon'
 import TasasCambio from './pages/TasasCambio'
 import { useApp } from './store'
 
@@ -38,21 +39,8 @@ export default function App() {
           <Route path="libro" element={<LibroFiados />} />
           <Route path="tasas" element={<TasasCambio />} />
           <Route path="reportes" element={<ReportesCierre />} />
-          <Route
-            path="configuracion"
-            element={
-              <Soon
-                titulo="Configuración"
-                detalle="Datos de la tienda, monedas habilitadas y usuarios de caja."
-              />
-            }
-          />
-          <Route
-            path="ayuda"
-            element={
-              <Soon titulo="Ayuda y Soporte" detalle="Guías de uso del mostrador y contacto." />
-            }
-          />
+          <Route path="configuracion" element={<Configuracion />} />
+          <Route path="ayuda" element={<Ayuda />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

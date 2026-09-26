@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { Delete, Loader2, Lock, ShieldCheck } from 'lucide-react'
-import { PIN_DEMO } from '../lib/supabase'
+import { pinActual } from '../lib/pin'
 import { useApp } from '../store'
 
 const MINUTOS_BLOQUEO = 10
 const CLAVE_ACTIVIDAD = 'ultimaActividad'
 const TECLAS = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
-const PIN = (PIN_DEMO ?? '').trim()
 
 function registrarActividad(): void {
   try {
@@ -36,7 +35,7 @@ export default function BloqueoInactividad() {
   const pinRef = useRef('')
 
   useEffect(() => {
-    if (!autenticado || !PIN) return
+    if (!autenticado || !pinActual()) return
 
     const umbral = MINUTOS_BLOQUEO * 60_000
     const evaluar = () => {
@@ -62,7 +61,7 @@ export default function BloqueoInactividad() {
   }
 
   const desbloquear = (valor: string) => {
-    if (valor === PIN) {
+    if (valor === pinActual()) {
       setError('')
       fijarPin('')
       registrarActividad()
@@ -97,7 +96,7 @@ export default function BloqueoInactividad() {
     return () => window.removeEventListener('keydown', manejar)
   })
 
-  if (!autenticado || !PIN || !bloqueado) return null
+  if (!autenticado || !pinActual() || !bloqueado) return null
 
   return (
     <div

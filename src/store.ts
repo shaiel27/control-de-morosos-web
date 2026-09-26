@@ -49,6 +49,7 @@ interface EstadoApp {
   iniciar: () => () => void
   refrescar: () => Promise<void>
   ingresar: (correo: string, clave: string) => Promise<boolean>
+  cambiarClave: (clave: string) => Promise<boolean>
   salir: () => Promise<void>
   definirTasas: (tasas: Tasas) => Promise<boolean>
   definirMoneda: (moneda: Moneda) => void
@@ -141,6 +142,17 @@ export const useApp = create<EstadoApp>((set, get) => ({
     }
     set({ autenticado: true, ocupado: false })
     await get().refrescar()
+    return true
+  },
+
+  cambiarClave: async (clave) => {
+    set({ ocupado: true, error: null })
+    const { error } = await supabase.auth.updateUser({ password: clave })
+    if (error) {
+      set({ ocupado: false, error: mensajeDeError(error) })
+      return false
+    }
+    set({ ocupado: false })
     return true
   },
 
