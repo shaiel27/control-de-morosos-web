@@ -22,6 +22,43 @@ export function clientesConDeuda(
     .sort((a, b) => b.saldo - a.saldo)
 }
 
+export interface FilaCuenta {
+  cliente: Cliente
+  fiado: number
+  abono: number
+  saldo: number
+  ultimoMovimiento: string | null
+}
+
+/** Detalle de la cuenta de todos los clientes, con deuda o no. */
+export function cuentasGenerales(
+  clientes: Cliente[],
+  transacciones: Transaccion[],
+): FilaCuenta[] {
+  const porCliente = new Map<string, { fiado: number; abono: number; ultimo: string | null }>()
+
+  for (const t of transacciones) {
+    const cuenta = porCliente.get(t.clienteId) ?? { fiado: 0, abono: 0, ultimo: null }
+    if (t.tipo === 'fiado') cuenta.fiado += t.montoCop
+    else cuenta.abono += t.montoCop
+    if (!cuenta.ultimo || t.fecha > cuenta.ultimo) cuenta.ultimo = t.fecha
+    porCliente.set(t.clienteId, cuenta)
+  }
+
+  return clientes
+    .map((cliente) => {
+      const cuenta = porCliente.get(cliente.id) ?? { fiado: 0, abono: 0, ultimo: null }
+      return {
+        cliente,
+        fiado: cuenta.fiado,
+        abono: cuenta.abono,
+        saldo: cuenta.fiado - cuenta.abono,
+        ultimoMovimiento: cuenta.ultimo,
+      }
+    })
+    .sort((a, b) => b.saldo - a.saldo)
+}
+
 export function resumenCartera(clientes: Cliente[], transacciones: Transaccion[]) {
   const saldos = clientes.map((cliente) => saldoDe(transacciones, cliente.id))
   const porCobrar = saldos.reduce((total, saldo) => total + Math.max(saldo, 0), 0)

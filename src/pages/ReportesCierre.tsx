@@ -1,9 +1,11 @@
-﻿import { useState } from 'react'
+﻿import { useMemo, useState } from 'react'
 import {
   ChartNoAxesColumn,
   ClipboardList,
   Download,
+  FileSpreadsheet,
   Lock,
+  Search,
   TrendingDown,
   TrendingUp,
 } from 'lucide-react'
@@ -13,6 +15,7 @@ import { exportarCSV, nombreDeArchivo } from '../lib/exportar'
 import { formatFecha, formatHora, formatMoney, inicialesDe, plural } from '../lib/money'
 import {
   clientesConDeuda,
+  cuentasGenerales,
   desdeDias,
   desdeHoy,
   desdeMes,
@@ -24,6 +27,13 @@ import {
 import { useApp } from '../store'
 
 type RangoReporte = 'hoy' | '7' | '30' | 'mes'
+type FiltroCuenta = 'todos' | 'deuda' | 'solvente'
+
+const FILTROS_CUENTA: { id: FiltroCuenta; etiqueta: string }[] = [
+  { id: 'todos', etiqueta: 'Todas' },
+  { id: 'deuda', etiqueta: 'Con deuda' },
+  { id: 'solvente', etiqueta: 'Sin deuda' },
+]
 
 const promedioDiario = new Intl.NumberFormat('es-CO', { maximumFractionDigits: 1 })
 
@@ -51,6 +61,10 @@ export default function ReportesCierre() {
 
   const [rango, setRango] = useState<RangoReporte>('7')
   const [aviso, setAviso] = useState('')
+  const [filtroCuenta, setFiltroCuenta] = useState<FiltroCuenta>('todos')
+  const [busquedaCuenta, setBusquedaCuenta] = useState('')
+
+  const cuentas = useMemo(() => cuentasGenerales(clientes, transacciones), [clientes, transacciones])
 
   if (cargando) {
     return (
@@ -75,6 +89,21 @@ export default function ReportesCierre() {
 
   const maximoDia = Math.max(1, ...serie.map((dia) => Math.max(dia.fiado, dia.abono)))
   const maxDeuda = Math.max(1, ...deudores.map((fila) => fila.saldo))
+
+  const textoBusqueda = busquedaCuenta.trim().toLowerCase()
+  const cuentasFiltradas = cuentas.filter((fila) => {
+    if (filtroCuenta === 'deuda' && fila.saldo <= 0) return false
+    if (filtroCuenta === 'solvente' && fila.saldo > 0) return false
+    if (!textoBusqueda) return true
+    const { cliente } = fila
+    return `${cliente.nombre} ${cliente.apellido} ${cliente.telefono ?? ''} ${cliente.cedula ?? ''}`
+      .toLowerCase()
+      .includes(textoBusqueda)
+  })
+
+  const totalCartera = cuentas.reduce((total, fila) => total + Math.max(fila.saldo, 0), 0)
+  const conDeuda = cuentas.filter((fila) => fila.saldo > 0).length
+  const solventes = cuentas.length - conDeuda
 
   const nombreDe = (clienteId: string) => {
     const cliente = clientes.find((c) => c.id === clienteId)
@@ -108,6 +137,31 @@ export default function ReportesCierre() {
     avisar(
       `Corte listo (demo): entraron ${formatMoney(resumen.abono, moneda, tasas)} y se fiaron ${formatMoney(resumen.fiado, moneda, tasas)}`,
     )
+  }
+
+  const estadoDe = (saldo: number) => {
+    if (saldo > 0) return { texto: 'Debe', clase: 'bg-coral-soft text-coral' }
+    if (saldo < 0) return { texto: 'A favor', clase: 'bg-apple-green-soft text-apple-green-dark' }
+    return { texto: 'Al día', clase: 'bg-gray-100 text-gray-500' }
+  }
+
+  const exportarGeneral = () => {
+    if (cuentasFiltradas.length === 0) return avisar('No hay cuentas para exportar')
+    exportarCSV(
+      nombreDeArchivo('reporte-general'),
+      ['Cliente', 'Teléfono', 'Cédula', 'Fiado COP', 'Abonado COP', 'Saldo COP', 'Estado', 'Último movimiento'],
+      cuentasFiltradas.map((fila) => [
+        `${fila.cliente.nombre} ${fila.cliente.apellido}`,
+        fila.cliente.telefono,
+        fila.cliente.cedula,
+        fila.fiado,
+        fila.abono,
+        fila.saldo,
+        estadoDe(fila.saldo).texto,
+        fila.ultimoMovimiento ? formatFecha(fila.ultimoMovimiento) : 'Sin movimientos',
+      ]),
+    )
+    avisar(`Reporte general exportado: ${plural(cuentasFiltradas.length, 'cuenta', 'cuentas')}`)
   }
 
   const kpis = [
@@ -224,6 +278,191 @@ export default function ReportesCierre() {
             <p className="mt-1 text-[11px] leading-snug text-gray-500">{detalle}</p>
           </article>
         ))}
+      </section>
+
+      <section className="rounded-xl border border-gray-200 bg-white shadow-sm">
+        <header className="flex flex-col gap-3 border-b border-gray-100 p-5 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <h2 className="text-base font-semibold text-gray-800">Reporte general de cuentas</h2>
+            <p className="text-xs text-gray-500">
+              Todas las cuentas de todos los clientes, deban o no.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {FILTROS_CUENTA.map(({ id, etiqueta }) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setFiltroCuenta(id)}
+                aria-pressed={filtroCuenta === id}
+                className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors ${
+                  filtroCuenta === id
+                    ? 'border-gray-800 bg-gray-800 text-white'
+                    : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-800'
+                }`}
+              >
+                {etiqueta}
+              </button>
+            ))}
+
+            <div className="relative min-w-0 flex-1 sm:w-56 sm:flex-none">
+              <Search
+                size={14}
+                aria-hidden
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              />
+              <input
+                type="search"
+                value={busquedaCuenta}
+                onChange={(evento) => setBusquedaCuenta(evento.target.value)}
+                placeholder="Buscar cliente, teléfono o cédula"
+                className="w-full rounded-lg border border-gray-200 bg-white py-1.5 pl-8 pr-3 text-xs text-gray-700 placeholder:text-gray-400 focus:border-gray-800 focus:outline-none"
+              />
+            </div>
+
+            <button
+              type="button"
+              onClick={exportarGeneral}
+              className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 transition-colors hover:border-apple-green hover:text-apple-green-dark"
+            >
+              <FileSpreadsheet size={14} aria-hidden />
+              Exportar
+            </button>
+          </div>
+        </header>
+
+        <div className="grid grid-cols-2 gap-3 border-b border-gray-100 p-5 sm:grid-cols-4">
+          <div>
+            <span className="block text-[11px] font-medium text-gray-400">Cuentas</span>
+            <span className="block text-lg font-bold tabular-nums text-gray-800">
+              {cuentas.length}
+            </span>
+          </div>
+          <div>
+            <span className="block text-[11px] font-medium text-gray-400">Con deuda</span>
+            <span className="block text-lg font-bold tabular-nums text-coral">{conDeuda}</span>
+          </div>
+          <div>
+            <span className="block text-[11px] font-medium text-gray-400">Sin deuda</span>
+            <span className="block text-lg font-bold tabular-nums text-apple-green-dark">
+              {solventes}
+            </span>
+          </div>
+          <div>
+            <span className="block text-[11px] font-medium text-gray-400">Total por cobrar</span>
+            <span className="block text-lg font-bold tabular-nums text-gray-800">
+              {formatMoney(totalCartera, moneda, tasas)}
+            </span>
+          </div>
+        </div>
+
+        {cuentasFiltradas.length === 0 ? (
+          <div className="px-6 py-12 text-center">
+            <p className="text-sm font-semibold text-gray-800">Sin resultados</p>
+            <p className="mt-1 text-xs text-gray-500">
+              {cuentas.length === 0
+                ? 'Aún no hay clientes registrados.'
+                : 'Ajusta la búsqueda o el filtro para ver cuentas.'}
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[720px] text-left">
+              <thead>
+                <tr className="border-b border-gray-100 text-[11px] uppercase tracking-wide text-gray-400">
+                  <th className="px-5 py-2.5 font-semibold">Cliente</th>
+                  <th className="px-3 py-2.5 font-semibold">Cédula</th>
+                  <th className="px-3 py-2.5 font-semibold">Último movimiento</th>
+                  <th className="px-3 py-2.5 text-right font-semibold">Fiado</th>
+                  <th className="px-3 py-2.5 text-right font-semibold">Abonado</th>
+                  <th className="px-5 py-2.5 text-right font-semibold">Saldo</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {cuentasFiltradas.map((fila) => {
+                  const estado = estadoDe(fila.saldo)
+                  return (
+                    <tr key={fila.cliente.id} className="transition-colors hover:bg-gray-50">
+                      <td className="px-5 py-3">
+                        <Link
+                          to={`/app/clientes/${fila.cliente.id}`}
+                          className="flex items-center gap-3"
+                        >
+                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-[11px] font-bold text-gray-500">
+                            {inicialesDe(`${fila.cliente.nombre} ${fila.cliente.apellido}`)}
+                          </span>
+                          <span className="min-w-0">
+                            <span className="block truncate text-sm font-medium text-gray-800">
+                              {fila.cliente.nombre} {fila.cliente.apellido}
+                            </span>
+                            <span className="block truncate text-[11px] text-gray-400">
+                              {fila.cliente.telefono || 'Sin teléfono'}
+                            </span>
+                          </span>
+                        </Link>
+                      </td>
+                      <td className="px-3 py-3 text-xs tabular-nums text-gray-500">
+                        {fila.cliente.cedula || '—'}
+                      </td>
+                      <td className="px-3 py-3 text-xs text-gray-500">
+                        {fila.ultimoMovimiento ? formatFecha(fila.ultimoMovimiento) : 'Sin movimientos'}
+                      </td>
+                      <td className="px-3 py-3 text-right text-sm tabular-nums text-gray-600">
+                        {formatMoney(fila.fiado, moneda, tasas)}
+                      </td>
+                      <td className="px-3 py-3 text-right text-sm tabular-nums text-apple-green-dark">
+                        {formatMoney(fila.abono, moneda, tasas)}
+                      </td>
+                      <td className="px-5 py-3 text-right">
+                        <span
+                          className={`inline-flex items-center gap-2 text-sm font-bold tabular-nums ${
+                            fila.saldo > 0 ? 'text-coral' : 'text-gray-800'
+                          }`}
+                        >
+                          {formatMoney(fila.saldo, moneda, tasas)}
+                          <span
+                            className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${estado.clase}`}
+                          >
+                            {estado.texto}
+                          </span>
+                        </span>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+              <tfoot>
+                <tr className="border-t border-gray-200 bg-gray-50/60 text-sm font-bold text-gray-800">
+                  <td className="px-5 py-3 text-xs font-semibold text-gray-500" colSpan={3}>
+                    {plural(cuentasFiltradas.length, 'cuenta', 'cuentas')} · Totales
+                  </td>
+                  <td className="px-3 py-3 text-right tabular-nums text-coral">
+                    {formatMoney(
+                      cuentasFiltradas.reduce((total, fila) => total + fila.fiado, 0),
+                      moneda,
+                      tasas,
+                    )}
+                  </td>
+                  <td className="px-3 py-3 text-right tabular-nums text-apple-green-dark">
+                    {formatMoney(
+                      cuentasFiltradas.reduce((total, fila) => total + fila.abono, 0),
+                      moneda,
+                      tasas,
+                    )}
+                  </td>
+                  <td className="px-5 py-3 text-right tabular-nums">
+                    {formatMoney(
+                      cuentasFiltradas.reduce((total, fila) => total + fila.saldo, 0),
+                      moneda,
+                      tasas,
+                    )}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        )}
       </section>
 
       <section className="grid grid-cols-1 gap-5 lg:grid-cols-12">
