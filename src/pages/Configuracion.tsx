@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
+  ChevronRight,
   KeyRound,
   LifeBuoy,
   Loader2,
@@ -10,6 +11,7 @@ import {
   UserPlus,
   Users,
 } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { guardarPin, pinActual } from '../lib/pin'
 import { supabase } from '../lib/supabase'
 import { useApp } from '../store'
@@ -485,11 +487,20 @@ export default function Configuracion() {
 
       <section className="flex items-start gap-3 rounded-xl border border-apple-green/30 bg-apple-green-soft px-5 py-4">
         <LifeBuoy size={17} aria-hidden className="mt-0.5 shrink-0 text-apple-green-dark" />
-        <p className="text-xs leading-relaxed text-gray-700">
-          ¿Olvidaste la contraseña o el PIN? Desde otro equipo entra con las credenciales de
-          administración y cámbialos aquí. La contraseña se valida en Supabase; el PIN solo
-          desbloquea este dispositivo.
-        </p>
+        <div className="min-w-0">
+          <p className="text-xs leading-relaxed text-gray-700">
+            ¿Olvidaste la contraseña o el PIN? Desde otro equipo entra con las credenciales de
+            administración y cámbialos aquí. La contraseña se valida en Supabase; el PIN solo
+            desbloquea este dispositivo.
+          </p>
+          <Link
+            to="/app/ayuda"
+            className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-apple-green-dark transition-colors hover:text-apple-green"
+          >
+            Ir a Ayuda y Soporte
+            <ChevronRight size={14} aria-hidden />
+          </Link>
+        </div>
       </section>
     </div>
   )

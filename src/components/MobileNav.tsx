@@ -2,7 +2,6 @@ import {
   ArrowLeftRight,
   BookOpen,
   ChartNoAxesColumn,
-  CircleQuestionMark,
   LayoutDashboard,
   Settings,
   Users,
@@ -16,7 +15,6 @@ const items = [
   { to: '/app/tasas', etiqueta: 'Tasas', icono: ArrowLeftRight, fin: false },
   { to: '/app/reportes', etiqueta: 'Corte', icono: ChartNoAxesColumn, fin: false },
   { to: '/app/configuracion', etiqueta: 'Ajustes', icono: Settings, fin: false },
-  { to: '/app/ayuda', etiqueta: 'Ayuda', icono: CircleQuestionMark, fin: false },
 ]
 
 export default function MobileNav() {
