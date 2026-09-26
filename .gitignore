@@ -28,3 +28,6 @@ dist-ssr
 *.sln
 *.sw?
 opencode.json
+
+# Wrangler (Cloudflare)
+.wrangler/
